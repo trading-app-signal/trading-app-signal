@@ -8,7 +8,8 @@ import CommunityView from './components/CommunityView';
 import ResultsView from './components/ResultsView';
 import PrivateChatView from './components/PrivateChatView';
 import TradeIdeasView from './components/TradeIdeasView';
-import { Bell, Plus, UserCircle, Settings, Wallet, Zap, Clock, MessageCircle, BarChart2, Mail, Lightbulb, X } from 'lucide-react';
+import LoginScreen from './components/LoginScreen';
+import { Bell, Plus, UserCircle, Settings, Wallet, Zap, Clock, MessageCircle, BarChart2, Mail, Lightbulb, X, LogOut } from 'lucide-react';
 
 // Generates ~40 mock signals with specific win rate logic
 const generateMockSignals = (): Signal[] => {
@@ -103,7 +104,7 @@ const INITIAL_CONVERSATIONS: PrivateConversation[] = [
   },
   {
     id: 'conv_2',
-    studentId: 'u1', // The current mock user ID
+    studentId: 'u_student', // Matched to the student ID created in LoginScreen
     studentName: 'Me',
     lastMessage: 'Thanks for the update!',
     lastTimestamp: Date.now() - 86400000,
@@ -147,10 +148,11 @@ const KEYS = {
 };
 
 const App: React.FC = () => {
-  // Initialize State from Local Storage or fallback to Initial Mock Data
-  const [user, setUser] = useState<User>(() => {
+  // Initialize State from Local Storage
+  // User can be null if not logged in
+  const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem(KEYS.USER);
-    return saved ? JSON.parse(saved) : { id: 'u1', name: 'Student', role: 'STUDENT' };
+    return saved ? JSON.parse(saved) : null;
   });
 
   const [signals, setSignals] = useState<Signal[]>(() => {
@@ -175,7 +177,11 @@ const App: React.FC = () => {
 
   // Persistence Effects
   useEffect(() => {
-    localStorage.setItem(KEYS.USER, JSON.stringify(user));
+    if (user) {
+      localStorage.setItem(KEYS.USER, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(KEYS.USER);
+    }
   }, [user]);
 
   useEffect(() => {
@@ -237,7 +243,18 @@ const App: React.FC = () => {
     setTimeout(() => setNotification(prev => ({ ...prev, visible: false })), 4000);
   };
 
+  const handleLogin = (authenticatedUser: User) => {
+    setUser(authenticatedUser);
+    setCurrentView('HOME');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setCurrentView('HOME');
+  };
+
   const handleAddSignal = (newSignalData: Omit<Signal, 'id' | 'timestamp' | 'status' | 'author'>) => {
+    if (!user) return;
     const newSignal: Signal = {
       ...newSignalData,
       id: `sig_${Date.now()}`,
@@ -266,6 +283,7 @@ const App: React.FC = () => {
   };
 
   const handlePostIdea = (newIdeaData: Omit<TradeIdea, 'id' | 'timestamp' | 'likes' | 'author'>) => {
+    if (!user) return;
     const newIdea: TradeIdea = {
       ...newIdeaData,
       id: `idea_${Date.now()}`,
@@ -283,6 +301,7 @@ const App: React.FC = () => {
   };
 
   const handleSendPrivateMessage = (conversationId: string, text: string) => {
+    if (!user) return;
     setConversations(prev => prev.map(conv => {
       if (conv.id === conversationId) {
         return {
@@ -314,14 +333,9 @@ const App: React.FC = () => {
     setLightboxImage(url);
   };
 
-  const toggleRole = () => {
-    const newRole = user.role === 'STUDENT' ? 'TEACHER' : 'STUDENT';
-    setUser({ ...user, role: newRole, name: newRole === 'TEACHER' ? 'Alex (Mentor)' : 'New Student' });
-    showNotification(`Switched to ${newRole === 'TEACHER' ? 'Teacher' : 'Student'} View`);
-    setCurrentView('HOME');
-  };
-
   const renderContent = () => {
+    if (!user) return null;
+
     switch (currentView) {
       case 'HOME':
         return (
@@ -405,6 +419,11 @@ const App: React.FC = () => {
     }
   };
 
+  // If user is not authenticated, show Login Screen
+  if (!user) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
   return (
     <div className="min-h-screen pb-24 bg-brand-dark text-white font-sans selection:bg-brand-accent selection:text-white">
       
@@ -428,14 +447,6 @@ const App: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-4">
-           {/* Role Toggle for Demo */}
-           <button 
-             onClick={toggleRole}
-             className="hidden sm:block text-xs font-mono text-gray-500 hover:text-white transition-colors"
-           >
-             {user.role} VIEW
-           </button>
-           
            {/* Private Message Button */}
            <button 
              onClick={() => setCurrentView('INBOX')}
@@ -451,6 +462,15 @@ const App: React.FC = () => {
              <Bell size={24} className="text-gray-300" />
              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#121217]"></span>
            </div>
+
+           {/* Logout Button */}
+           <button 
+             onClick={handleLogout}
+             className="ml-2 p-2 bg-white/5 rounded-full text-gray-400 hover:text-brand-danger hover:bg-brand-danger/10 transition-colors"
+             title="Log Out"
+           >
+             <LogOut size={18} />
+           </button>
         </div>
       </header>
 
