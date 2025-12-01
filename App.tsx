@@ -237,6 +237,25 @@ const App: React.FC = () => {
   // Logic for notification badges
   const totalUnread = conversations.reduce((acc, curr) => acc + curr.unreadCount, 0);
 
+  // Play Notification Sound
+  const playNotificationSound = () => {
+    try {
+      // Alarm Clock Sound (Digital Beep)
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2860/2860-preview.mp3'); 
+      audio.volume = 0.5;
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          // Auto-play was prevented
+          console.log('Audio playback prevented:', error);
+        });
+      }
+    } catch (e) {
+      console.error('Audio setup failed', e);
+    }
+  };
+
   // Simulate pushing a notification
   const showNotification = (msg: string) => {
     setNotification({ message: msg, visible: true });
@@ -264,6 +283,7 @@ const App: React.FC = () => {
     };
     setSignals([newSignal, ...signals]);
     showNotification(`🔔 New Signal Alert: ${newSignal.asset} ${newSignal.type}`);
+    playNotificationSound();
   };
 
   const handleSignalStatusChange = (id: string, newStatus: Signal['status'], resultImage?: string) => {
@@ -293,6 +313,7 @@ const App: React.FC = () => {
     };
     setTradeIdeas([newIdea, ...tradeIdeas]);
     showNotification(`💡 New Market Idea: ${newIdeaData.title}`);
+    playNotificationSound();
   };
 
   const handleDeleteIdea = (id: string) => {
