@@ -2,8 +2,14 @@ import { GoogleGenAI } from "@google/genai";
 import { Signal } from "../types";
 
 const getClient = () => {
-    // Check if API KEY is available
-    const apiKey = process.env.API_KEY;
+    // Check if API KEY is available with safety for browser environments
+    let apiKey: string | undefined;
+    try {
+        apiKey = process.env.API_KEY;
+    } catch (e) {
+        console.warn("Environment variable access not supported in this environment");
+    }
+
     if (!apiKey) {
         console.warn("Gemini API Key is missing. AI features will be disabled.");
         return null;
