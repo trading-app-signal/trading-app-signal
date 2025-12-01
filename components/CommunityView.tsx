@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage, User } from '../types';
 import { Send, Users, Hash, Image as ImageIcon } from 'lucide-react';
@@ -87,7 +88,7 @@ const CommunityView: React.FC<CommunityViewProps> = ({ user }) => {
   };
 
   return (
-    <div className="h-[calc(100dvh-180px)] flex flex-col pb-safe">
+    <div className="h-[calc(100vh-180px)] flex flex-col">
       {/* Header */}
       <div className="glass-high rounded-2xl p-4 mb-4 flex items-center justify-between border border-white/5">
         <div className="flex items-center gap-3">
@@ -163,7 +164,7 @@ const CommunityView: React.FC<CommunityViewProps> = ({ user }) => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Share your thoughts..."
-            className="w-full bg-white/5 border border-white/10 rounded-full pl-5 pr-12 py-3.5 text-base text-white focus:outline-none focus:border-brand-accent/50 focus:bg-white/10 transition-colors"
+            className="w-full bg-white/5 border border-white/10 rounded-full pl-5 pr-12 py-3.5 text-white focus:outline-none focus:border-brand-accent/50 focus:bg-white/10 transition-colors"
           />
           <button 
             type="button"

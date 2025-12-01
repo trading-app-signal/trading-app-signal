@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Orbit Signals</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -43,9 +43,6 @@
         color: #ffffff;
         font-family: 'Inter', sans-serif;
         -webkit-tap-highlight-color: transparent;
-        /* Fix for iOS scrolling momentum */
-        -webkit-overflow-scrolling: touch; 
-        overscroll-behavior-y: none;
       }
       /* Custom scrollbar for webkit */
       ::-webkit-scrollbar {
@@ -69,19 +66,6 @@
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      }
-      /* iOS Safe Area Utilities */
-      .pt-safe {
-        padding-top: env(safe-area-inset-top);
-      }
-      .pb-safe {
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-      .min-h-dvh {
-        min-height: 100dvh;
-      }
-      .h-dvh {
-        height: 100dvh;
       }
     </style>
   <script type="importmap">

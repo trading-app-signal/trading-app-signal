@@ -31,8 +31,8 @@ const AddSignalModal: React.FC<AddSignalModalProps> = ({ onClose, onSubmit }) =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-[#121217] border border-white/10 rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 duration-300 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center p-5 border-b border-white/5 sticky top-0 bg-[#121217] z-10">
+      <div className="w-full max-w-md bg-[#121217] border border-white/10 rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 duration-300">
+        <div className="flex justify-between items-center p-5 border-b border-white/5">
           <h2 className="text-lg font-bold text-white">New Signal</h2>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-gray-400">
             <X size={20} />
@@ -48,7 +48,7 @@ const AddSignalModal: React.FC<AddSignalModalProps> = ({ onClose, onSubmit }) =>
                   type="text" 
                   value={asset}
                   onChange={(e) => setAsset(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent transition-colors font-mono text-base"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent transition-colors font-mono"
                   placeholder="XAUUSD"
                   required
                 />
@@ -81,7 +81,7 @@ const AddSignalModal: React.FC<AddSignalModalProps> = ({ onClose, onSubmit }) =>
               step="any"
               value={entry}
               onChange={(e) => setEntry(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent transition-colors font-mono text-base"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent transition-colors font-mono"
               placeholder="0.00"
               required
             />
@@ -95,7 +95,7 @@ const AddSignalModal: React.FC<AddSignalModalProps> = ({ onClose, onSubmit }) =>
                 step="any"
                 value={tp}
                 onChange={(e) => setTp(e.target.value)}
-                className="w-full bg-brand-success/5 border border-brand-success/20 rounded-xl px-4 py-3 text-brand-success focus:outline-none focus:border-brand-success transition-colors font-mono text-base"
+                className="w-full bg-brand-success/5 border border-brand-success/20 rounded-xl px-4 py-3 text-brand-success focus:outline-none focus:border-brand-success transition-colors font-mono"
                 placeholder="0.00"
                 required
               />
@@ -107,7 +107,7 @@ const AddSignalModal: React.FC<AddSignalModalProps> = ({ onClose, onSubmit }) =>
                 step="any"
                 value={sl}
                 onChange={(e) => setSl(e.target.value)}
-                className="w-full bg-brand-danger/5 border border-brand-danger/20 rounded-xl px-4 py-3 text-brand-danger focus:outline-none focus:border-brand-danger transition-colors font-mono text-base"
+                className="w-full bg-brand-danger/5 border border-brand-danger/20 rounded-xl px-4 py-3 text-brand-danger focus:outline-none focus:border-brand-danger transition-colors font-mono"
                 placeholder="0.00"
                 required
               />
@@ -119,7 +119,7 @@ const AddSignalModal: React.FC<AddSignalModalProps> = ({ onClose, onSubmit }) =>
              <textarea 
                value={notes}
                onChange={(e) => setNotes(e.target.value)}
-               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent transition-colors text-base min-h-[80px]"
+               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-accent transition-colors text-sm min-h-[80px]"
                placeholder="Why are we taking this trade?"
              />
           </div>
