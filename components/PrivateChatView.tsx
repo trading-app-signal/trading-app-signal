@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { User, PrivateConversation, ChatMessage } from '../types';
 import { Send, ChevronLeft, Search, User as UserIcon } from 'lucide-react';
@@ -41,7 +40,7 @@ const PrivateChatView: React.FC<PrivateChatViewProps> = ({ user, conversations, 
   // RENDER: Teacher Inbox List
   if (user.role === 'TEACHER' && !activeConversationId) {
     return (
-      <div className="animate-in fade-in duration-300 h-[calc(100vh-140px)] flex flex-col">
+      <div className="animate-in fade-in duration-300 h-[calc(100dvh-140px)] flex flex-col">
         <div className="mb-4">
           <h2 className="text-xl font-bold text-white mb-1">Inbox</h2>
           <p className="text-xs text-gray-400">Student Inquiries</p>
@@ -52,7 +51,7 @@ const PrivateChatView: React.FC<PrivateChatViewProps> = ({ user, conversations, 
           <input 
             type="text" 
             placeholder="Search students..." 
-            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-accent/50"
+            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-base text-white focus:outline-none focus:border-brand-accent/50"
           />
         </div>
 
@@ -95,7 +94,7 @@ const PrivateChatView: React.FC<PrivateChatViewProps> = ({ user, conversations, 
 
   // RENDER: Chat Interface (for both Student & Teacher)
   return (
-    <div className="animate-in slide-in-from-right duration-300 h-[calc(100vh-140px)] flex flex-col">
+    <div className="animate-in slide-in-from-right duration-300 h-[calc(100dvh-140px)] flex flex-col">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/5">
         {user.role === 'TEACHER' && (
@@ -147,7 +146,7 @@ const PrivateChatView: React.FC<PrivateChatViewProps> = ({ user, conversations, 
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder={user.role === 'STUDENT' ? "Ask a question..." : "Reply..."}
-          className="flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3.5 text-white focus:outline-none focus:border-brand-accent/50 focus:bg-white/10 transition-colors"
+          className="flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3.5 text-base text-white focus:outline-none focus:border-brand-accent/50 focus:bg-white/10 transition-colors"
         />
         <button 
           type="submit" 

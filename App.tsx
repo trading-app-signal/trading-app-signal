@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { User, Signal, PrivateConversation, ChatMessage, TradeIdea } from './types';
 import SignalCard from './components/SignalCard';
@@ -9,7 +8,7 @@ import ResultsView from './components/ResultsView';
 import PrivateChatView from './components/PrivateChatView';
 import TradeIdeasView from './components/TradeIdeasView';
 import LoginScreen from './components/LoginScreen';
-import { Bell, Plus, UserCircle, Settings, Wallet, Zap, Clock, MessageCircle, BarChart2, Mail, Lightbulb, X, LogOut } from 'lucide-react';
+import { Bell, Plus, UserCircle, Settings, Wallet, Zap, Clock, MessageCircle, BarChart2, Mail, Lightbulb, X, LogOut, Smartphone, Download, Upload, Info } from 'lucide-react';
 
 // Generates ~40 mock signals with specific win rate logic
 const generateMockSignals = (): Signal[] => {
@@ -174,6 +173,10 @@ const App: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [notification, setNotification] = useState<{message: string, visible: boolean}>({ message: '', visible: false });
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  
+  // Settings / Data Sync State
+  const [showSettings, setShowSettings] = useState(false);
+  const [importDataString, setImportDataString] = useState('');
 
   // Persistence Effects
   useEffect(() => {
@@ -247,7 +250,7 @@ const App: React.FC = () => {
       
       if (playPromise !== undefined) {
         playPromise.catch(error => {
-          // Auto-play was prevented
+          // Auto-play was prevented (browser requirement for user interaction first)
           console.log('Audio playback prevented:', error);
         });
       }
@@ -268,6 +271,7 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
+    setShowSettings(false);
     setUser(null);
     setCurrentView('HOME');
   };
@@ -354,13 +358,40 @@ const App: React.FC = () => {
     setLightboxImage(url);
   };
 
+  // --- MANUAL DATA SYNC FUNCTIONS ---
+  const handleExportData = () => {
+    const data = {
+        signals,
+        tradeIdeas,
+        conversations
+    };
+    const jsonString = JSON.stringify(data);
+    navigator.clipboard.writeText(jsonString);
+    showNotification("Data copied to clipboard! Send this to your iPhone.");
+  };
+
+  const handleImportData = () => {
+      try {
+          if (!importDataString) return;
+          const data = JSON.parse(importDataString);
+          if (data.signals) setSignals(data.signals);
+          if (data.tradeIdeas) setTradeIdeas(data.tradeIdeas);
+          if (data.conversations) setConversations(data.conversations);
+          showNotification("Data successfully imported! App updated.");
+          setImportDataString("");
+          setShowSettings(false);
+      } catch (e) {
+          showNotification("Error: Invalid data format.");
+      }
+  };
+
   const renderContent = () => {
     if (!user) return null;
 
     switch (currentView) {
       case 'HOME':
         return (
-          <div className="space-y-4 animate-in fade-in duration-300">
+          <div className="space-y-4 animate-in fade-in duration-300 pb-safe">
              <DailySummary count={todaysSignalCount} />
              <div className="flex justify-between items-center mb-2">
                <h3 className="text-lg font-bold text-white">Live Signals</h3>
@@ -388,7 +419,7 @@ const App: React.FC = () => {
         );
       case 'HISTORY':
         return (
-          <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="space-y-6 animate-in fade-in duration-300 pb-safe">
              <div className="flex justify-between items-center mb-2">
                <h3 className="text-lg font-bold text-white">All Signals</h3>
                <div className="text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-full">Archive</div>
@@ -423,9 +454,9 @@ const App: React.FC = () => {
       case 'COMMUNITY':
         return <div className="animate-in fade-in duration-300"><CommunityView user={user} /></div>;
       case 'RESULTS':
-        return <div className="animate-in fade-in duration-300"><ResultsView signals={signals} onViewImage={handleViewImage} /></div>;
+        return <div className="animate-in fade-in duration-300 pb-safe"><ResultsView signals={signals} onViewImage={handleViewImage} /></div>;
       case 'TRADE_IDEAS':
-        return <div className="animate-in fade-in duration-300"><TradeIdeasView user={user} ideas={tradeIdeas} onPostIdea={handlePostIdea} onDelete={handleDeleteIdea} /></div>;
+        return <div className="animate-in fade-in duration-300 pb-safe"><TradeIdeasView user={user} ideas={tradeIdeas} onPostIdea={handlePostIdea} onDelete={handleDeleteIdea} /></div>;
       case 'INBOX':
         return (
           <PrivateChatView 
@@ -446,7 +477,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pb-24 bg-brand-dark text-white font-sans selection:bg-brand-accent selection:text-white">
+    <div className="min-h-dvh pb-32 bg-brand-dark text-white font-sans selection:bg-brand-accent selection:text-white overflow-x-hidden">
       
       {/* Dynamic Background Mesh */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -456,7 +487,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 glass-high px-6 py-4 flex justify-between items-center">
+      <header className="sticky top-0 z-40 glass-high px-6 py-4 pt-safe flex justify-between items-center transition-all duration-300">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-accent to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
              <Zap size={20} className="text-white fill-white" />
@@ -467,7 +498,7 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
            {/* Private Message Button */}
            <button 
              onClick={() => setCurrentView('INBOX')}
@@ -484,13 +515,13 @@ const App: React.FC = () => {
              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#121217]"></span>
            </div>
 
-           {/* Logout Button */}
+           {/* Settings/Logout Button */}
            <button 
-             onClick={handleLogout}
-             className="ml-2 p-2 bg-white/5 rounded-full text-gray-400 hover:text-brand-danger hover:bg-brand-danger/10 transition-colors"
-             title="Log Out"
+             onClick={() => setShowSettings(true)}
+             className="ml-2 p-2 bg-white/5 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+             title="Settings & Logout"
            >
-             <LogOut size={18} />
+             <Settings size={20} />
            </button>
         </div>
       </header>
@@ -528,43 +559,45 @@ const App: React.FC = () => {
         
       </main>
 
-      {/* Navigation Bar (Mobile) */}
-      <nav className="fixed bottom-6 left-6 right-6 z-40">
-        <div className="glass h-16 rounded-[2rem] flex justify-between items-center px-4 shadow-2xl shadow-black/50 border border-white/10 max-w-lg mx-auto">
-          <button 
-            onClick={() => setCurrentView('HOME')}
-            className={`p-3 transition-all duration-300 ${currentView === 'HOME' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <Zap size={24} fill={currentView === 'HOME' ? "currentColor" : "none"} />
-          </button>
-          
-          <button 
-            onClick={() => setCurrentView('HISTORY')}
-            className={`p-3 transition-all duration-300 ${currentView === 'HISTORY' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <Clock size={24} />
-          </button>
+      {/* Navigation Bar (Mobile) - Safe Area Fixed */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
+        <div className="mx-6 mb-6">
+            <div className="glass h-16 rounded-[2rem] flex justify-between items-center px-4 shadow-2xl shadow-black/50 border border-white/10 max-w-lg mx-auto">
+            <button 
+                onClick={() => setCurrentView('HOME')}
+                className={`p-3 transition-all duration-300 ${currentView === 'HOME' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+                <Zap size={24} fill={currentView === 'HOME' ? "currentColor" : "none"} />
+            </button>
+            
+            <button 
+                onClick={() => setCurrentView('HISTORY')}
+                className={`p-3 transition-all duration-300 ${currentView === 'HISTORY' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+                <Clock size={24} />
+            </button>
 
-          <button 
-            onClick={() => setCurrentView('TRADE_IDEAS')}
-            className={`p-3 transition-all duration-300 ${currentView === 'TRADE_IDEAS' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <Lightbulb size={24} fill={currentView === 'TRADE_IDEAS' ? "currentColor" : "none"} />
-          </button>
+            <button 
+                onClick={() => setCurrentView('TRADE_IDEAS')}
+                className={`p-3 transition-all duration-300 ${currentView === 'TRADE_IDEAS' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+                <Lightbulb size={24} fill={currentView === 'TRADE_IDEAS' ? "currentColor" : "none"} />
+            </button>
 
-          <button 
-            onClick={() => setCurrentView('COMMUNITY')}
-            className={`p-3 transition-all duration-300 ${currentView === 'COMMUNITY' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <MessageCircle size={24} fill={currentView === 'COMMUNITY' ? "currentColor" : "none"} />
-          </button>
+            <button 
+                onClick={() => setCurrentView('COMMUNITY')}
+                className={`p-3 transition-all duration-300 ${currentView === 'COMMUNITY' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+                <MessageCircle size={24} fill={currentView === 'COMMUNITY' ? "currentColor" : "none"} />
+            </button>
 
-          <button 
-            onClick={() => setCurrentView('RESULTS')}
-            className={`p-3 transition-all duration-300 ${currentView === 'RESULTS' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
-          >
-            <BarChart2 size={24} />
-          </button>
+            <button 
+                onClick={() => setCurrentView('RESULTS')}
+                className={`p-3 transition-all duration-300 ${currentView === 'RESULTS' ? 'text-brand-accent scale-110' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+                <BarChart2 size={24} />
+            </button>
+            </div>
         </div>
       </nav>
 
@@ -591,20 +624,89 @@ const App: React.FC = () => {
         >
           <button 
             onClick={() => setLightboxImage(null)}
-            className="absolute top-4 right-4 p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all z-50"
+            className="absolute top-4 right-4 p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all z-50 pt-safe"
           >
             <X size={24} />
           </button>
           <img 
             src={lightboxImage} 
             alt="Full Screen View" 
-            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl animate-in zoom-in-95 duration-300"
+            className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
 
-      {/* Modals */}
+      {/* Settings / Sync / Logout Modal */}
+      {showSettings && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+             <div className="w-full max-w-md bg-[#121217] border border-white/10 rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 duration-300">
+                <div className="flex justify-between items-center p-5 border-b border-white/5">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Settings size={18} /> Settings
+                    </h2>
+                    <button onClick={() => setShowSettings(false)} className="p-2 rounded-full hover:bg-white/5 text-gray-400">
+                        <X size={20} />
+                    </button>
+                </div>
+                
+                <div className="p-5 space-y-6">
+                    {/* Device Sync Info */}
+                    <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl">
+                        <div className="flex items-start gap-3">
+                            <Info className="text-blue-400 shrink-0 mt-0.5" size={18} />
+                            <div>
+                                <h3 className="text-sm font-bold text-blue-400 mb-1">Device Synchronization</h3>
+                                <p className="text-xs text-gray-400 leading-relaxed">
+                                    This app currently stores data locally. To sync data from your Computer to your iPhone, export the data below and import it on your phone.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <button 
+                            onClick={handleExportData}
+                            className="bg-white/5 border border-white/10 hover:bg-white/10 p-4 rounded-xl flex flex-col items-center gap-2 transition-colors"
+                        >
+                            <div className="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent">
+                                <Download size={20} />
+                            </div>
+                            <span className="text-xs font-bold text-gray-300">Export Data</span>
+                        </button>
+
+                        <button 
+                            onClick={() => {
+                                const input = prompt("Paste your data string here:");
+                                if(input) {
+                                    setImportDataString(input);
+                                    setTimeout(handleImportData, 100);
+                                }
+                            }}
+                            className="bg-white/5 border border-white/10 hover:bg-white/10 p-4 rounded-xl flex flex-col items-center gap-2 transition-colors"
+                        >
+                            <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                <Upload size={20} />
+                            </div>
+                            <span className="text-xs font-bold text-gray-300">Import Data</span>
+                        </button>
+                    </div>
+
+                    <div className="pt-4 border-t border-white/10">
+                        <button 
+                            onClick={handleLogout}
+                            className="w-full bg-brand-danger/10 hover:bg-brand-danger/20 text-brand-danger border border-brand-danger/20 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all"
+                        >
+                            <LogOut size={18} />
+                            Log Out
+                        </button>
+                    </div>
+                </div>
+             </div>
+          </div>
+      )}
+
+      {/* Add Modal */}
       {showAddModal && (
         <AddSignalModal 
           onClose={() => setShowAddModal(false)}
