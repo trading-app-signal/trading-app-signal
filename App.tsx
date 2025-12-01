@@ -355,7 +355,7 @@ const App: React.FC = () => {
         return (
           <div className="space-y-6 animate-in fade-in duration-300">
              <div className="flex justify-between items-center mb-2">
-               <h3 className="text-lg font-bold text-white">Past Entries</h3>
+               <h3 className="text-lg font-bold text-white">All Signals</h3>
                <div className="text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-full">Archive</div>
              </div>
              

@@ -65,8 +65,8 @@ const TradeIdeasView: React.FC<TradeIdeasViewProps> = ({ user, ideas, onPostIdea
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex justify-between items-center">
         <div>
-           <h2 className="text-xl font-bold text-white">Market Insights</h2>
-           <p className="text-xs text-gray-400">Analysis & Ideas</p>
+           <h2 className="text-xl font-bold text-white">Trade Ideas</h2>
+           <p className="text-xs text-gray-400">Analysis & Insights</p>
         </div>
         {user.role === 'TEACHER' && (
           <button 
