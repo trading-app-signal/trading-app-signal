@@ -10,77 +10,83 @@ import PrivateChatView from './components/PrivateChatView';
 import TradeIdeasView from './components/TradeIdeasView';
 import { Bell, Plus, UserCircle, Settings, Wallet, Zap, Clock, MessageCircle, BarChart2, Mail, Lightbulb, X } from 'lucide-react';
 
-// Combined mock data for a single source of truth
-const INITIAL_SIGNALS: Signal[] = [
-  {
-    id: 'sig_001',
-    asset: 'XAUUSD',
-    type: 'SHORT',
-    entryPrice: 2360.50,
-    stopLoss: 2375.00,
-    takeProfit1: 2345.00,
-    takeProfit2: 2330.00,
-    timestamp: Date.now() - 3600000,
-    status: 'ACTIVE',
-    notes: 'Resistance rejection at daily high. Gold showing weakness.',
-    author: 'Alex (Mentor)'
-  },
-  {
-    id: 'sig_002',
-    asset: 'XAUUSD',
-    type: 'LONG',
-    entryPrice: 2310.00,
-    stopLoss: 2295.00,
-    takeProfit1: 2330.00,
-    takeProfit2: 2350.00,
-    timestamp: Date.now() - 7200000,
-    status: 'HIT_TP',
-    notes: 'Breakout from bullish flag pattern on 4H.',
-    author: 'Alex (Mentor)',
-    resultImage: 'https://images.unsplash.com/photo-1611974765270-ca12586343bb?auto=format&fit=crop&q=80&w=800&h=500'
-  },
-  {
-    id: 'sig_hist_01',
-    asset: 'XAUUSD',
-    type: 'LONG',
-    entryPrice: 2250.00,
-    stopLoss: 2240.00,
-    takeProfit1: 2270.00,
-    takeProfit2: 2290.00,
-    timestamp: Date.now() - 86400000 * 2, // 2 days ago
-    status: 'CLOSED',
-    notes: 'Classic retest of the weekly support zone.',
-    author: 'Alex (Mentor)',
-    imageUrl: 'https://images.unsplash.com/photo-1611974765270-ca12586343bb?auto=format&fit=crop&q=80&w=800&h=500' 
-  },
-  {
-    id: 'sig_hist_02',
-    asset: 'XAUUSD',
-    type: 'SHORT',
-    entryPrice: 2300.50,
-    stopLoss: 2315.00,
-    takeProfit1: 2280.00,
-    takeProfit2: 2260.00,
-    timestamp: Date.now() - 86400000 * 2 - 3600000, // 2 days ago, slightly earlier
-    status: 'HIT_SL',
-    notes: 'News event caused a spike invalidating the setup.',
-    author: 'Sarah (Analyst)',
-    resultImage: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?auto=format&fit=crop&q=80&w=800&h=500'
-  },
-  {
-    id: 'sig_hist_03',
-    asset: 'XAUUSD',
-    type: 'LONG',
-    entryPrice: 2280.00,
-    stopLoss: 2270.00,
-    takeProfit1: 2300.00,
-    takeProfit2: 2310.00,
-    timestamp: Date.now() - 86400000 * 3, // 3 days ago
-    status: 'HIT_TP',
-    notes: 'Quick scalp on the M15 timeframe.',
-    author: 'Alex (Mentor)'
-  }
-];
+// Generates ~40 mock signals with specific win rate logic
+const generateMockSignals = (): Signal[] => {
+  const signals: Signal[] = [];
+  const now = new Date();
+  
+  // Helper for random float
+  const rand = (min: number, max: number) => Math.random() * (max - min) + min;
+
+  // We need dates for "Current Month" (Nov in prompt, but let's make it dynamic for "This Month")
+  // and "Previous Month" (Oct in prompt, dynamic "Last Month")
+  
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  
+  const prevMonthDate = new Date(now);
+  prevMonthDate.setMonth(currentMonth - 1);
+  const prevMonth = prevMonthDate.getMonth();
+  const prevYear = prevMonthDate.getFullYear();
+
+  // Create 24 signals for Current Month
+  // 16 Wins (67%), 5 Losses (21%), 3 BE (12%) ~= 68/22 distribution
+  const currentMonthOutcomes = [
+    ...Array(16).fill('HIT_TP'),
+    ...Array(5).fill('HIT_SL'),
+    ...Array(3).fill('BREAK_EVEN')
+  ];
+
+  // Create 16 signals for Previous Month
+  // 11 Wins, 3 Losses, 2 BE
+  const prevMonthOutcomes = [
+    ...Array(11).fill('HIT_TP'),
+    ...Array(3).fill('HIT_SL'),
+    ...Array(2).fill('BREAK_EVEN')
+  ];
+
+  const createSignal = (index: number, outcome: any, month: number, year: number): Signal => {
+    const isLong = Math.random() > 0.5;
+    const entry = rand(2600, 2750); // Gold price range
+    const dist = rand(5, 15); // Distance to SL/TP
+    
+    // Random day in month (1-28 to be safe)
+    const day = Math.floor(rand(1, 28));
+    
+    // Ensure date is not in future if using current month
+    let date = new Date(year, month, day, Math.floor(rand(8, 20)), 0);
+    if (date > now) {
+       date = new Date(now.getTime() - rand(1000, 86400000)); // fallback to recent past if generated future date
+    }
+
+    return {
+      id: `mock_${year}_${month}_${index}`,
+      asset: 'XAUUSD',
+      type: isLong ? 'LONG' : 'SHORT',
+      entryPrice: parseFloat(entry.toFixed(2)),
+      stopLoss: parseFloat((isLong ? entry - dist : entry + dist).toFixed(2)),
+      takeProfit1: parseFloat((isLong ? entry + dist * 2 : entry - dist * 2).toFixed(2)),
+      takeProfit2: parseFloat((isLong ? entry + dist * 3 : entry - dist * 3).toFixed(2)),
+      timestamp: date.getTime(),
+      status: outcome,
+      notes: `Technical setup based on ${isLong ? 'support bounce' : 'resistance rejection'}.`,
+      author: 'Alex (Mentor)',
+      resultImage: outcome === 'HIT_TP' 
+        ? 'https://images.unsplash.com/photo-1611974765270-ca12586343bb?auto=format&fit=crop&q=80&w=800&h=500' 
+        : undefined
+    };
+  };
+
+  currentMonthOutcomes.forEach((outcome, i) => {
+    signals.push(createSignal(i, outcome, currentMonth, currentYear));
+  });
+
+  prevMonthOutcomes.forEach((outcome, i) => {
+    signals.push(createSignal(i + 100, outcome, prevMonth, prevYear));
+  });
+
+  return signals.sort((a, b) => b.timestamp - a.timestamp);
+};
 
 const INITIAL_CONVERSATIONS: PrivateConversation[] = [
   {
@@ -132,11 +138,12 @@ const INITIAL_IDEAS: TradeIdea[] = [
 type ViewState = 'HOME' | 'HISTORY' | 'COMMUNITY' | 'RESULTS' | 'INBOX' | 'TRADE_IDEAS';
 
 // Local Storage Keys
+// Version bump to v3 to reset data and use new generated signals
 const KEYS = {
-  USER: 'orbit_user_v1',
-  SIGNALS: 'orbit_signals_v1',
-  CONVERSATIONS: 'orbit_conversations_v1',
-  IDEAS: 'orbit_ideas_v1'
+  USER: 'orbit_user_v3',
+  SIGNALS: 'orbit_signals_v3',
+  CONVERSATIONS: 'orbit_conversations_v3',
+  IDEAS: 'orbit_ideas_v3'
 };
 
 const App: React.FC = () => {
@@ -148,7 +155,7 @@ const App: React.FC = () => {
 
   const [signals, setSignals] = useState<Signal[]>(() => {
     const saved = localStorage.getItem(KEYS.SIGNALS);
-    return saved ? JSON.parse(saved) : INITIAL_SIGNALS;
+    return saved ? JSON.parse(saved) : generateMockSignals();
   });
 
   const [conversations, setConversations] = useState<PrivateConversation[]>(() => {
@@ -253,6 +260,11 @@ const App: React.FC = () => {
     showNotification(`Trade Update: ${newStatus.replace('_', ' ')}`);
   };
 
+  const handleDeleteSignal = (id: string) => {
+    setSignals(prev => prev.filter(s => s.id !== id));
+    showNotification('Signal deleted from history.');
+  };
+
   const handlePostIdea = (newIdeaData: Omit<TradeIdea, 'id' | 'timestamp' | 'likes' | 'author'>) => {
     const newIdea: TradeIdea = {
       ...newIdeaData,
@@ -263,6 +275,11 @@ const App: React.FC = () => {
     };
     setTradeIdeas([newIdea, ...tradeIdeas]);
     showNotification(`💡 New Market Idea: ${newIdeaData.title}`);
+  };
+
+  const handleDeleteIdea = (id: string) => {
+    setTradeIdeas(prev => prev.filter(i => i.id !== id));
+    showNotification('Insight deleted.');
   };
 
   const handleSendPrivateMessage = (conversationId: string, text: string) => {
@@ -328,6 +345,7 @@ const App: React.FC = () => {
                    userRole={user.role} 
                    onStatusChange={handleSignalStatusChange}
                    onViewImage={handleViewImage}
+                   onDelete={handleDeleteSignal}
                  />
                ))
              )}
@@ -354,7 +372,13 @@ const App: React.FC = () => {
                       <div className="h-px bg-white/10 flex-1"></div>
                    </div>
                    {group.signals.map(signal => (
-                     <SignalCard key={signal.id} signal={signal} onViewImage={handleViewImage} />
+                     <SignalCard 
+                        key={signal.id} 
+                        signal={signal} 
+                        userRole={user.role}
+                        onViewImage={handleViewImage} 
+                        onDelete={handleDeleteSignal}
+                     />
                    ))}
                  </div>
                ))
@@ -366,7 +390,7 @@ const App: React.FC = () => {
       case 'RESULTS':
         return <div className="animate-in fade-in duration-300"><ResultsView signals={signals} onViewImage={handleViewImage} /></div>;
       case 'TRADE_IDEAS':
-        return <div className="animate-in fade-in duration-300"><TradeIdeasView user={user} ideas={tradeIdeas} onPostIdea={handlePostIdea} /></div>;
+        return <div className="animate-in fade-in duration-300"><TradeIdeasView user={user} ideas={tradeIdeas} onPostIdea={handlePostIdea} onDelete={handleDeleteIdea} /></div>;
       case 'INBOX':
         return (
           <PrivateChatView 

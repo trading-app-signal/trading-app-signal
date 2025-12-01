@@ -1,18 +1,20 @@
 
 import React, { useState, useRef } from 'react';
 import { Signal } from '../types';
-import { TrendingUp, TrendingDown, ChevronRight, Target, ShieldAlert, Image as ImageIcon, CheckCircle, XCircle, Shield, Upload, X, Maximize2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, ChevronRight, Target, ShieldAlert, Image as ImageIcon, CheckCircle, XCircle, Shield, Upload, X, Maximize2, Trash2 } from 'lucide-react';
 
 interface SignalCardProps {
   signal: Signal;
   userRole?: 'STUDENT' | 'TEACHER';
   onStatusChange?: (id: string, status: Signal['status'], resultImage?: string) => void;
   onViewImage?: (imageUrl: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-const SignalCard: React.FC<SignalCardProps> = ({ signal, userRole, onStatusChange, onViewImage }) => {
+const SignalCard: React.FC<SignalCardProps> = ({ signal, userRole, onStatusChange, onViewImage, onDelete }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [resultImage, setResultImage] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isLong = signal.type === 'LONG';
@@ -47,6 +49,19 @@ const SignalCard: React.FC<SignalCardProps> = ({ signal, userRole, onStatusChang
     e.stopPropagation();
     if (onStatusChange) {
       onStatusChange(signal.id, newStatus, resultImage || undefined);
+    }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isDeleting) {
+        // Confirmed
+        if (onDelete) onDelete(signal.id);
+    } else {
+        // First click - ask for confirmation
+        setIsDeleting(true);
+        // Reset after 3 seconds if not confirmed
+        setTimeout(() => setIsDeleting(false), 3000);
     }
   };
 
@@ -219,6 +234,23 @@ const SignalCard: React.FC<SignalCardProps> = ({ signal, userRole, onStatusChang
                           B.E HIT
                         </button>
                      </div>
+                  </div>
+                )}
+                
+                {/* Delete Button for Teachers */}
+                {userRole === 'TEACHER' && onDelete && (
+                  <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
+                    <button 
+                      onClick={handleDeleteClick}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                        isDeleting 
+                          ? 'bg-brand-danger text-white hover:bg-red-600' 
+                          : 'text-brand-danger/80 hover:text-brand-danger hover:bg-brand-danger/10'
+                      }`}
+                    >
+                      <Trash2 size={14} /> 
+                      {isDeleting ? 'Confirm Delete?' : 'Delete Signal'}
+                    </button>
                   </div>
                 )}
 

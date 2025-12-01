@@ -1,17 +1,19 @@
 
 import React, { useState, useRef } from 'react';
 import { TradeIdea, User } from '../types';
-import { Plus, X, Upload, Maximize2 } from 'lucide-react';
+import { Plus, X, Upload, Maximize2, Trash2 } from 'lucide-react';
 
 interface TradeIdeasViewProps {
   user: User;
   ideas: TradeIdea[];
   onPostIdea: (idea: Omit<TradeIdea, 'id' | 'timestamp' | 'likes' | 'author'>) => void;
+  onDelete?: (id: string) => void;
 }
 
-const TradeIdeasView: React.FC<TradeIdeasViewProps> = ({ user, ideas, onPostIdea }) => {
+const TradeIdeasView: React.FC<TradeIdeasViewProps> = ({ user, ideas, onPostIdea, onDelete }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState<string | null>(null);
@@ -42,6 +44,19 @@ const TradeIdeasView: React.FC<TradeIdeasViewProps> = ({ user, ideas, onPostIdea
     setShowModal(false);
   };
 
+  const handleDeleteClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (deletingId === id) {
+        if (onDelete) {
+            onDelete(id);
+            setDeletingId(null);
+        }
+    } else {
+        setDeletingId(id);
+        setTimeout(() => setDeletingId(null), 3000);
+    }
+  };
+
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString() + ' • ' + new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
@@ -65,7 +80,23 @@ const TradeIdeasView: React.FC<TradeIdeasViewProps> = ({ user, ideas, onPostIdea
 
       <div className="space-y-6 pb-20">
         {ideas.map((idea) => (
-          <div key={idea.id} className="glass rounded-3xl overflow-hidden group">
+          <div key={idea.id} className="glass rounded-3xl overflow-hidden group relative">
+            
+            {/* Delete Button (Teacher Only) */}
+            {user.role === 'TEACHER' && onDelete && (
+                <button
+                    onClick={(e) => handleDeleteClick(e, idea.id)}
+                    className={`absolute top-4 right-4 z-30 p-2 rounded-full backdrop-blur-md shadow-lg transition-all ${
+                        deletingId === idea.id 
+                        ? 'bg-red-600 text-white w-auto px-3 flex items-center gap-1' 
+                        : 'bg-black/40 text-gray-300 hover:bg-red-500 hover:text-white'
+                    }`}
+                >
+                    <Trash2 size={16} />
+                    {deletingId === idea.id && <span className="text-[10px] font-bold">Confirm?</span>}
+                </button>
+            )}
+
             {/* Image Section */}
             {idea.imageUrl && (
               <div 
