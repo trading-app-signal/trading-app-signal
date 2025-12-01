@@ -14,14 +14,25 @@ interface CommunityViewProps {
   user: User;
 }
 
+const STORAGE_KEY = 'orbit_community_messages_v1';
+
 const CommunityView: React.FC<CommunityViewProps> = ({ user }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>(MOCK_MESSAGES);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : MOCK_MESSAGES;
+  });
+
   const [inputText, setInputText] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Persist messages whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
   }, [messages]);
 
   const handleSend = (e: React.FormEvent) => {

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { User, Signal, PrivateConversation, ChatMessage, TradeIdea } from './types';
 import SignalCard from './components/SignalCard';
 import AddSignalModal from './components/AddSignalModal';
@@ -131,15 +131,57 @@ const INITIAL_IDEAS: TradeIdea[] = [
 
 type ViewState = 'HOME' | 'HISTORY' | 'COMMUNITY' | 'RESULTS' | 'INBOX' | 'TRADE_IDEAS';
 
+// Local Storage Keys
+const KEYS = {
+  USER: 'orbit_user_v1',
+  SIGNALS: 'orbit_signals_v1',
+  CONVERSATIONS: 'orbit_conversations_v1',
+  IDEAS: 'orbit_ideas_v1'
+};
+
 const App: React.FC = () => {
-  const [user, setUser] = useState<User>({ id: 'u1', name: 'Student', role: 'STUDENT' });
-  const [signals, setSignals] = useState<Signal[]>(INITIAL_SIGNALS);
-  const [conversations, setConversations] = useState<PrivateConversation[]>(INITIAL_CONVERSATIONS);
-  const [tradeIdeas, setTradeIdeas] = useState<TradeIdea[]>(INITIAL_IDEAS);
+  // Initialize State from Local Storage or fallback to Initial Mock Data
+  const [user, setUser] = useState<User>(() => {
+    const saved = localStorage.getItem(KEYS.USER);
+    return saved ? JSON.parse(saved) : { id: 'u1', name: 'Student', role: 'STUDENT' };
+  });
+
+  const [signals, setSignals] = useState<Signal[]>(() => {
+    const saved = localStorage.getItem(KEYS.SIGNALS);
+    return saved ? JSON.parse(saved) : INITIAL_SIGNALS;
+  });
+
+  const [conversations, setConversations] = useState<PrivateConversation[]>(() => {
+    const saved = localStorage.getItem(KEYS.CONVERSATIONS);
+    return saved ? JSON.parse(saved) : INITIAL_CONVERSATIONS;
+  });
+
+  const [tradeIdeas, setTradeIdeas] = useState<TradeIdea[]>(() => {
+    const saved = localStorage.getItem(KEYS.IDEAS);
+    return saved ? JSON.parse(saved) : INITIAL_IDEAS;
+  });
+
   const [currentView, setCurrentView] = useState<ViewState>('HOME');
   const [showAddModal, setShowAddModal] = useState(false);
   const [notification, setNotification] = useState<{message: string, visible: boolean}>({ message: '', visible: false });
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
+  // Persistence Effects
+  useEffect(() => {
+    localStorage.setItem(KEYS.USER, JSON.stringify(user));
+  }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem(KEYS.SIGNALS, JSON.stringify(signals));
+  }, [signals]);
+
+  useEffect(() => {
+    localStorage.setItem(KEYS.CONVERSATIONS, JSON.stringify(conversations));
+  }, [conversations]);
+
+  useEffect(() => {
+    localStorage.setItem(KEYS.IDEAS, JSON.stringify(tradeIdeas));
+  }, [tradeIdeas]);
 
   // Filtered lists
   const activeSignals = signals.filter(s => s.status === 'ACTIVE');
@@ -185,10 +227,6 @@ const App: React.FC = () => {
   // Simulate pushing a notification
   const showNotification = (msg: string) => {
     setNotification({ message: msg, visible: true });
-    
-    // Play sound effect (optional/browser policy dependent, simplified here)
-    // const audio = new Audio('/notification.mp3'); audio.play().catch(e => {});
-
     setTimeout(() => setNotification(prev => ({ ...prev, visible: false })), 4000);
   };
 
