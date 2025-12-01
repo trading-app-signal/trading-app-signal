@@ -9,7 +9,7 @@ interface DailySummaryProps {
 const DailySummary: React.FC<DailySummaryProps> = ({ count }) => {
   return (
     <div className="mb-6">
-      <h3 className="text-white font-bold text-lg mb-3 tracking-tight">Daily Briefing</h3>
+      <h3 className="text-white font-bold text-lg mb-3 tracking-tight">Daily Signals</h3>
       <div className="glass rounded-3xl p-6 flex items-center justify-between relative overflow-hidden group border border-white/5 hover:bg-white/5 transition-all duration-300">
         {/* Background Glow */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/10 rounded-full blur-[40px] -mr-10 -mt-10"></div>
